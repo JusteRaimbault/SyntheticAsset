@@ -5,11 +5,18 @@ setwd(paste0(Sys.getenv('CS_HOME'),'/FinancialNetwork/SyntheticAsset/Models'))
 
 
 # tests asset viz
-eurusd <- read.csv('data/EURUSD_201511.csv',header=FALSE)
-eurgbp <- read.csv('data/EURGBP_201511.csv',header=FALSE)
+eurusd <- read.csv('data/raw/EURUSD_201511.csv',header=FALSE)
+eurgbp <- read.csv('data/raw/EURGBP_201511.csv',header=FALSE)
 
-# package smoother
-library(smoother)
+# package smoother -- NO, shitty complexity
+#library(smoother)
+
+
+# should proceed to temporal adjustement here : different lengths !
+# -> dirty part of data normalization and completion
+
+formatDates <- function(d){as.numeric(format(as.POSIXct(substr(d,1,15),format="%Y%m%d %H%M%S",tz="UTC"),format="%s"))}
+sapply(eurusd[,1],formatDates)
 
 # midmarket signal
 s1 = (eurusd[,2]+eurusd[,3])/2
@@ -18,9 +25,6 @@ dx1 = diff(x1)
 s2 = (eurgbp[,2]+eurgbp[,3])/2
 x2 = log(s2/s2[1])
 dx2 = diff(x2)
-
-# should proceed to temporal adjustement here : different lengths !
-# -> dirty part of data normalization and completion
 
 
 # plots 
@@ -40,7 +44,7 @@ hist(dx1,breaks=1000)
 
 ### Filtering : smoothing function is totally shitty in complexity ; must use convolve
 
-# sigma is WIDTH (ie 2*sigma)
+# sigma is WIDTH (ie 2*sigma of the gaussian)
 #  ! returns ts corresponding to [2sigma : end-2sigma] !
 gaussianFilter <- function(x,sigma){
   # kernel : cut at +- 2 sigma
