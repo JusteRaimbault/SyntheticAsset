@@ -44,16 +44,6 @@ hist(dx1,breaks=1000)
 
 ### Filtering : smoothing function is totally shitty in complexity ; must use convolve
 
-# sigma is WIDTH (ie 2*sigma of the gaussian)
-#  ! returns ts corresponding to [2sigma : end-2sigma] !
-gaussianFilter <- function(x,sigma){
-  # kernel : cut at +- 2 sigma
-  k = exp(- (((-2*sigma):(2*sigma))^2) / (sigma/2)^2)
-  k = k/sum(k)
-  return(convolve(x,k,type="filter"))
-}
-
-
 
 
 # corr synth data -> correlation between log-returns at a given scale.
@@ -77,16 +67,6 @@ plot(dx1,type='l')
 #   -> estimate sigma of Black-Scholes after sampling.
 #  pb : correlates returns or signal ? if returns, integration errors ?
 
-# simulation of brownian motion
-#  beware : sigma must be consistent with steps number (scales as sqrt(T))
-brownian <- function(sigma,steps){
-  # starts from 0
-  res = c(0)
-  for(t in 1:(steps-1)){
-    res = append(res,res[t]+rnorm(1,0,sigma))  
-  }
-  return(res)
-}
 
 # check if function works well
 hist(diff(brownian(0.001,100000)),breaks=1000)
@@ -98,14 +78,7 @@ f1 = cumsum(df1)
 # f1 can be sampled at 10min as filtered at 30min, should be no aliasing
 f1 = f1[seq(from=1,to=length(f1),by=600)]
 
-# function for synth asset (single path : TODO multiple path to gain computation time)
-#  assumes dirtily without checking that original follows a blackscholes dynamic
-synthAsset<- function(original,rho){
-  # estimate sigma
-  sigma = sd(diff(original))
-  indep = brownian(sigma,length(original))
-  return(rho*original + sqrt(1 - rho^2)*indep)
-}
+
 
 #quick test
 plot(diff(f1),type='l')
@@ -119,6 +92,14 @@ for(k in 1:1000){
 
 hist(corrs,breaks=50)
 
+
+
+# test synth asset
+omega0=72
+s=synthAssets(x1,x2,0.01,omega0)
+plot(x1[(2*omega0+1):(length(x1)-2*omega0)],type='l');points(s[,1],type='l',col='red')
+
+# TODO : plot of examples of synth data
 
 
 
