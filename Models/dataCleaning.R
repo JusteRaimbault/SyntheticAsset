@@ -84,7 +84,7 @@ filterData<-function(data,sigma){
 #test <- cleanData('data/test',"201506",c("EURGBP","EURUSD"))
 
 assets = c("EURUSD","EURGBP")
-months = paste0("2015",c("06","07","08","09","10","11"))
+months = paste0("2015",c("07","08","09","10","11"))
 dir = "data/raw"
 
 filtering = 600
