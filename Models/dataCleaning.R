@@ -20,17 +20,27 @@ extractFromSupport<-function(reducedsupport,support,ts){
   end = pend[length(pend)]
   res=c(ts[start]) 
   suppind = 1
+  
+  show(paste0("start : ",start," ; end : ",end))
+
   for(k in start:(end-1)){
     # check if jump in reduced support compared to support
     # if no jump 
-    if(reducedsupport[suppind + 1]==support[k+1]){
-      # if current index different, at the end of a jump, must adjust res ts
-      if(support[k]!=reducedsupport[suppind]){
-        res = res + (ts[k+1] - res[length(res)])
+   #if(!is.numeric(reducedsupport[suppind + 1])){show(paste0("suppind : ",suppind," ; ",reducedsupport[suppind + 1]," ; k : ",k," ; ",support[k + 1]))}
+   #if(!is.numeric(support[k + 1])){show(paste0("suppind : ",suppind," ; ",reducedsupport[suppind + 1]," ; k : ",k," ; ",support[k + 1]))}
+
+   #show(paste0("suppind : ",suppind," ; ",reducedsupport[suppind + 1]," ; k : ",k," ; ",support[k + 1]))
+
+   if(suppind<length(reducedsupport)){  
+     if(reducedsupport[suppind + 1]==support[k+1]){
+        # if current index different, at the end of a jump, must adjust res ts
+        if(support[k]!=reducedsupport[suppind]){
+          res = res + (ts[k+1] - res[length(res)])
+        }
+        res=append(res,ts[k+1])
+        #show(paste0("supind : ",suppind," , k : ",k," , res = ",length(res))) #DEBUG
+        suppind=suppind+1
       }
-      res=append(res,ts[k+1])
-      #show(paste0("supind : ",suppind," , k : ",k," , res = ",length(res))) #DEBUG
-      suppind=suppind+1
     }
   } 
   return(res)
@@ -45,7 +55,10 @@ cleanData <- function(dir,month,assets){
   for(asset in assets){d[[asset]]=read.csv(paste0(dir,"/",asset,'_',month,'.csv'),header=FALSE)}
   # convert times
   show("-> converting timestamps")
-  for(asset in assets){d[[asset]][,1]=sapply(d[[asset]][,1],formatDates)}
+  for(asset in assets){
+       d[[asset]][,1]=sapply(d[[asset]][,1],formatDates)
+       d[[asset]] = d[[asset]][!is.na(d[[asset]][,1]),]
+  }
   # compute mids
   show("-> computing mids")
   for(asset in assets){d[[asset]]$mids=(d[[asset]][,2]+d[[asset]][,3])/2}
@@ -54,6 +67,7 @@ cleanData <- function(dir,month,assets){
   support = d[[assets[1]]][,1]
   for(i in 2:length(assets)){support=intersect(support,d[[assets[i]]][,1])}
   support = unique(support)
+  support = support[!is.na(support)]
   # compute clean ts
   show("-> cleaning ts")
   res=list()
@@ -84,7 +98,7 @@ filterData<-function(data,sigma){
 #test <- cleanData('data/test',"201506",c("EURGBP","EURUSD"))
 
 assets = c("EURUSD","EURGBP")
-months = paste0("2015",c("07","08","09","10","11"))
+months = paste0("2015",c("08","09","10","11","07"))
 dir = "data/raw"
 
 filtering = 600

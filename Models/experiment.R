@@ -6,7 +6,7 @@
 
 resdir = 'res/'
 assets = c("EURUSD","EURGBP")
-months = paste0("2015",c("06","07","08","09","10","11"))
+months = paste0("2015",c("08","09","10","11","07"))
 #months=c("201506")
 filterings = c(3,6,12)
 #filterings=c(12)
