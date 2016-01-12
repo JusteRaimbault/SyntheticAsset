@@ -31,7 +31,11 @@ for(month in months){
     # generate synthetic data for each level of correlation
     synthlength = length(x1)-(4*omega0*3/filtering)
     synth = matrix(0,2*synthlength,length(correlations))
-    for(i in 1:length(correlations)){s=synthAssets(x1,x2,correlations[i],omega0*3/filtering);synth[,i]=c(s[,1],s[,2])}
+    for(i in 1:length(correlations)){
+      s=synthAssets(x1,x2,correlations[i],omega0*3/filtering);
+      synth[,i]=c(s[,1],s[,2])
+    }
+    for(j in 1:length(correlations)){x1s=synth[1:synthlength,j];x2s=synth[(synthlength+1):(2*synthlength),j];show(cor(diff(x1s),diff(x2s)))}
     
     # compute perfs in //
     res <- foreach(j=1:ncol(synth)) %dopar% {
