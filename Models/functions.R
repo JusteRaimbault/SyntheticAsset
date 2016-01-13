@@ -30,7 +30,7 @@ gaussianFilter <- function(x,sigma){
 ##
 # sampling by providing sampling step
 sample <- function(x,step){
-  s = seq(from=1,to=length(x),by=floor(step))
+  s = seq(from=1,to=length(x),by=max(floor(step),1))
   return(x[s])
 }
 
