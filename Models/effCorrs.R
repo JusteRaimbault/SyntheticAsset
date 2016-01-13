@@ -76,7 +76,7 @@ correlations = seq(from=-0.95,to=0.95,by=0.05)
 bootstrap_num = 1
 
 effcorrs = c();effcorrsmin=c();effcorrsmax=c()
-filt=c();expcorr=c();thcorr=c()
+filt=c();expcorr=c();thcorr=c();e1mean=c();e2mean=c()
 
 # first compute vol/cor at omega0 - estimated on all ts, a bit different than after second filtering,
 # but should be negletible
@@ -107,7 +107,7 @@ for(f in 1:length(filterings)){
   for(j in 1:length(correlations)){
     xs1 = synth1[,j];xs2 = synth2[,j]
     ctest = cor.test(diff(xs1),diff(xs2));
-    sigmaY1 = sd(diff(xs1-x10));sigmaY2 = sd(diff(xs2-x20));e1=sigma10/sigmaY1;e2=sigma20/sigmaY2
+    sigmaY1 = sd(diff(xs1-x10[(2*filtering+1):(length(x10)-2*filtering)]));sigmaY2 = sd(diff(xs2-x20[(2*filtering+1):(length(x10)-2*filtering)]));e1=sigma10/sigmaY1;e2=sigma20/sigmaY2
     rhoY = correlations[j]
     #show(cor(diff(synth1[,j]),diff(synth2[,j])))
     effcorrs=append(effcorrs,ctest$estimate);
@@ -116,6 +116,7 @@ for(f in 1:length(filterings)){
     filt=append(filt,filtering);
     expcorr=append(expcorr,correlations[j])
     thcorr=append(thcorr,(e1*e2*rho0 + rhoY)/sqrt((1+e1^2)*(1+e2^2)))
+    e1mean=append(e1mean,e1);e2mean=append(e2mean,e2);
   } 
 }
 
@@ -128,14 +129,14 @@ g=ggplot(
     rhomin=effcorrsmin,
     rhomax=effcorrsmax,
     rhoth=thcorr,
-    filtering=filt),
+    filtering=filt*600/3600),
   aes(x=rho,y=rho_eff,colour=filtering))
 g+geom_point(shape=19)+
   geom_errorbar(aes(ymin=rhomin,ymax=rhomax))+
-  scale_color_gradientn(colours=rainbow(length(filterings)))+
-  geom_line(aes(x=rho,y=rhoth,colour=filtering))+
+  scale_color_gradientn(colours=rainbow(length(filterings)),name="omega_1 (h)")+
+  geom_line(aes(x=rho,y=rhoth,group=filtering,colour=filtering))+
   geom_abline(slope=1,intercept = 0,colour="black",linetype=2)+
-  geom_vline(xintercept=2*rho0*e1*e2/(e1^2+e2^2),colour='red')
+  geom_vline(xintercept=2*rho0*mean(e1mean)*mean(e2mean)/(mean(e1mean)^2+mean(e2mean)^2),colour='red')
 
 
 

@@ -7,7 +7,7 @@
 resdir = 'res/'
 assets = c("EURUSD","EURGBP")
 
-filterings = c(1,3,6,12,24)
+filterings = c(6,9,12)
 correlations = seq(from=-0.95,to=0.95,by=0.05)
 omega0 = 144
 
@@ -30,7 +30,7 @@ for(filtering in filterings){
     synthlength = length(xf1)-(4*omega0)
     synth = matrix(0,2*synthlength,length(correlations))
     for(i in 1:length(correlations)){
-      s=synthAssets(x1,x2,correlations[i],omega0);
+      s=synthAssets(xf1,xf2,correlations[i],omega0);
       synth[,i]=c(s[,1],s[,2])
     }
     
@@ -42,10 +42,15 @@ for(filtering in filterings){
     }
     
     # compute perfs in //
+    #   estimated computing time : for t \in [1:100] at filtering=6 : tau = 160s
+    #      length(x1s)=6000 -> tautot = tau*60 ~ 3h !
+    #   filtering = 12 -> tautot ~ 1,5h
+    #
     res <- foreach(j=1:ncol(synth)) %dopar% {
       source('functions.R');source('models.R')
       x1s=sample(synth[1:synthlength,j],filtering/2);x2s=sample(synth[(synthlength+1):(2*synthlength),j],filtering/2);
-      m=predictionMSE(x1s,x2s,144*2/filtering,2)
+      #t=system.time(predictionMSE(x1s[1:200],x2s[1:200],288*2/filtering,2));t
+      m=predictionMSE(x1s[1:200],x2s[1:200],288*2/filtering,2)
       error=(m$expected-m$pred)^2
       res=c(error[,1],error[,2])
       res

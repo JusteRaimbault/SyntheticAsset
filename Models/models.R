@@ -26,11 +26,11 @@ predictionMSE <- function(x1,x2,Tw,p){
   dx2 = diff(x2)
   d = data.frame(dx1,dx2)
   
-  pred = matrix(0,length(dx1)-Tw,2)
+  pred = matrix(NA,length(dx1)-Tw,2)
   
   for(t in 1:nrow(pred)){
-    m = VARMA(d[t:(t+Tw-1),],p=p,q=0)
-    pred[t,] = VARMApred(m)$pred
+    m = tryCatch(VARMA(d[t:(t+Tw-1),],p=p,q=0))
+    pred[t,] = tryCatch(VARMApred(m)$pred)
   }
   
   # mse can be directly computed on returns as prediction done step by step
