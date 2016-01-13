@@ -50,7 +50,7 @@ for(filtering in filterings){
       source('functions.R');source('models.R')
       x1s=sample(synth[1:synthlength,j],filtering/2);x2s=sample(synth[(synthlength+1):(2*synthlength),j],filtering/2);
       #t=system.time(predictionMSE(x1s[1:200],x2s[1:200],288*2/filtering,2));t
-      m=predictionMSE(x1s[1:200],x2s[1:200],288*2/filtering,2)
+      m=predictionMSE(x1s,x2s,288*2/filtering,2)
       error=(m$expected-m$pred)^2
       res=c(error[,1],error[,2])
       res
