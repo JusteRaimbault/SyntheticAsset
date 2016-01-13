@@ -30,7 +30,7 @@ for(filtering in filterings){
     synthlength = length(xf1)-(4*omega0)
     synth = matrix(0,2*synthlength,length(correlations))
     for(i in 1:length(correlations)){
-      s=synthAssets(x1,x2,correlations[i],omega0);
+      s=synthAssets(xf1,xf2,correlations[i],omega0);
       synth[,i]=c(s[,1],s[,2])
     }
     
