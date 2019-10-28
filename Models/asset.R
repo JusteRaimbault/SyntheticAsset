@@ -3,13 +3,17 @@
 
 setwd(paste0(Sys.getenv('CS_HOME'),'/FinancialNetwork/SyntheticAsset/Models'))
 
+library(ggplot2)
+
+source(paste0(Sys.getenv('CS_HOME'),'/Organisation/Models/Utils/R/plots.R'))
+source('functions.R')
 
 # tests asset viz
 eurusd <- read.csv('data/raw/EURUSD_201511.csv',header=FALSE)
 eurgbp <- read.csv('data/raw/EURGBP_201511.csv',header=FALSE)
 
 # package smoother -- NO, shitty complexity
-#library(smoother)
+library(smoother)
 
 
 # should proceed to temporal adjustement here : different lengths !
@@ -28,14 +32,24 @@ dx2 = diff(x2)
 
 
 # plots 
+x=x1
 
 plot(x[1801:12600],type='l',main='EUR/USD, 1st November 2015',ylab='log(s/s0)',xlab='time (s)')
-points(convolve(x[1801:12600],k,type="filter"),col='red',type='l')
+#points(convolve(x[1801:12600],k,type="filter"),col='red',type='l')
 #filtering test
-#f1 = smth.gaussian(x,window=1800)
+#f1=smth.gaussian(x,window=1800)
 #f2=smth.gaussian(x,window=450)
+f1=smth.gaussian(x[1:14400],window=1800,tails = T)
+f2=smth.gaussian(x[1:14400],window=300,tails = T)
 points(f1[1801:12600],col='red',type='l')
 points(f2[1801:12600],col='purple',type='l')
+
+l = length(1801:12600)
+d = data.frame(t=rep(1:l,3),x=c(x[1801:12600],f1[1801:12600],f2[1801:12600]),filtering = c(rep("raw",l),rep("5min",l),rep("30min",l)))
+# redo as ggplot
+pal<-function(n){return(c("black","red","green"))}
+g = ggplot(d,aes(x=t,y=x,group=filtering,color=filtering))
+g+geom_line(size=0.3)+scale_color_gradientn(colors=rainbow(3))
 
 
 # stylized facts ? -> check fat tail

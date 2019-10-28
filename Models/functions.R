@@ -39,6 +39,23 @@ brownian <- function(sigma,steps){
 }
 
 
+laggedCorrs <- function(x1,x2,taumin,taumax,taustep){
+  taus = seq(from=taumin,to=taumax,by=taustep)
+  corrs=c();corrsmin=c();corrsmax=c()
+  for(tau in taus){
+    # determine common support bounds
+    if(tau <= 0){
+      x2e = x2[(1-tau):length(x2)];x1e= x1[1:(length(x1)+tau)]
+    }else{
+      x2e = x2[1:(length(x2)-tau)];x1e= x1[(1+tau):length(x1)]
+    }
+    t = cor.test(x1e,x2e)
+    corrs=append(corrs,t$estimate);corrsmin=append(corrsmin,t$conf.int[1]);corrsmax=append(corrsmax,t$conf.int[2])
+  }
+  return(data.frame(taus,corrs,corrsmin,corrsmax))
+}
+
+
 ##
 #
 synthAssets<- function(x1,x2,rho,omega0){
