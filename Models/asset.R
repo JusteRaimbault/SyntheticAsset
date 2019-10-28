@@ -34,23 +34,51 @@ dx2 = diff(x2)
 # plots 
 x=x1
 
-plot(x[1801:12600],type='l',main='EUR/USD, 1st November 2015',ylab='log(s/s0)',xlab='time (s)')
+#plot(x[1801:12600],type='l',main='EUR/USD, 1st November 2015',ylab='log(s/s0)',xlab='time (s)')
 #points(convolve(x[1801:12600],k,type="filter"),col='red',type='l')
 #filtering test
 #f1=smth.gaussian(x,window=1800)
 #f2=smth.gaussian(x,window=450)
+
 f1=smth.gaussian(x[1:14400],window=1800,tails = T)
 f2=smth.gaussian(x[1:14400],window=300,tails = T)
-points(f1[1801:12600],col='red',type='l')
-points(f2[1801:12600],col='purple',type='l')
+
+#points(f1[1801:12600],col='red',type='l')
+#points(f2[1801:12600],col='purple',type='l')
 
 l = length(1801:12600)
-d = data.frame(t=rep(1:l,3),x=c(x[1801:12600],f1[1801:12600],f2[1801:12600]),filtering = c(rep("raw",l),rep("5min",l),rep("30min",l)))
+d = data.frame(t=rep(1:l,3),
+               x=c(x[1801:12600],f1[1801:12600],f2[1801:12600]),
+               filtering = factor(c(rep("raw",l),rep("30min",l),rep("5min",l)),levels=c("raw","5min","30min"))
+               )
 # redo as ggplot
-pal<-function(n){return(c("black","red","green"))}
-g = ggplot(d,aes(x=t,y=x,group=filtering,color=filtering))
-g+geom_line(size=0.3)+scale_color_gradientn(colors=rainbow(3))
+#pal<-function(n){return(c("black","red","green"))}
 
+g = ggplot(d[d$filtering!="raw",],aes(x=t,y=x,group=filtering,color=filtering))
+g+geom_line(data=d[d$filtering=="raw",],size=0.3,color='black')+
+  geom_line(size=1)+#ggtitle('EUR/USD, 1st November 2015')+
+  xlab('Time (s)')+ylab(expression("log"*(s/s[0])))+
+  scale_color_discrete(name=expression(omega))+stdtheme
+ggsave(file='../Results/Stylized/filteringExample_20151101_5-30min.png',width=24,height=20,units='cm')
+
+
+### same plot with 10min more readable ?
+
+f2=smth.gaussian(x[1:14400],window=600,tails = T)
+d = data.frame(t=rep(1:l,3),x=c(x[1801:12600],f1[1801:12600],f2[1801:12600]),filtering = factor(c(rep("raw",l),rep("30min",l),rep("10min",l)),levels=c("raw","10min","30min")))
+
+
+g = ggplot(d[d$filtering!="raw",],aes(x=t,y=x,group=filtering,color=filtering))
+g+geom_line(data=d[d$filtering=="raw",],size=0.3,color='black')+
+  geom_line(size=1.5)+
+  #ggtitle('EUR/USD, 1st November 2015')+
+  xlab('Time (s)')+ylab(expression("log"*(s/s[0])))+xlim(0,l)+
+  scale_color_discrete(name=expression(omega))+stdtheme
+ggsave(file='../Results/Stylized/filteringExample_20151101_10-30min.png',width=28,height=18,units='cm')
+
+
+
+###########
 
 # stylized facts ? -> check fat tail
 hist(dx1,breaks=1000)

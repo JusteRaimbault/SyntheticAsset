@@ -3,17 +3,19 @@
 
 setwd(paste0(Sys.getenv('CS_HOME'),'/FinancialNetwork/SyntheticAsset/Models'))
 
-res <- read.csv('res/201506_3.csv',sep=";",header=FALSE)
-res=t(res)
+
+### Tests
+
+#res <- read.csv('res/201506_3.csv',sep=";",header=FALSE)
+#res=t(res)
 
 # rough plot
-plot(colMeans(res))
-colMeans(res)
-apply(res,2,sd)
+#plot(colMeans(res))
+#colMeans(res)
+#apply(res,2,sd)
 
 # 95% CI on means
-
-apply(res,2,function(c){2*1.96*sd(c)/sqrt(length(c))})
+#apply(res,2,function(c){2*1.96*sd(c)/sqrt(length(c))})
 
 
 ##############
@@ -50,10 +52,15 @@ for(filtering in filterings){
 }
 
 d=data.frame(rho,rhoeff,filt,asset,perf,perfmin,perfmax)
-filtering=12
-g=ggplot(d[d$filt==filtering,],aes(x=rhoeff,y=perf,colour=asset))
-g+geom_point()+geom_errorbar(aes(ymin=perfmin,ymax=perfmax))+ggtitle(paste0('omega1=',filtering))+stat_smooth()
+#filtering=12
 
+for(filtering in filterings){
+  g=ggplot(d[d$filt==filtering,],aes(x=rhoeff,y=perf,colour=asset))
+  g+geom_point()+geom_errorbar(aes(ymin=perfmin,ymax=perfmax))+ggtitle(bquote(omega[1]*"="*.(filtering/6)*"h"))+stat_smooth()+
+    xlab(expression('Effective correlation '*rho[e]))+ylab(expression('Performance '*pi))+
+    scale_color_discrete(name="Asset")+stdtheme
+  ggsave(file=paste0('../Results/Prediction/predictionPerformance-rhoeff_filt',filtering,'.png'),width=22,height=16,units='cm')
+}
 
 ######
 # lag corr between fundamental components -> cause of different behavior ?
@@ -68,19 +75,23 @@ for(filtering in filterings){
   tau=append(tau,l$taus);rhol=append(rhol,l$corrs);rholmin=append(rholmin,l$corrsmin);rholmax=append(rholmax,l$corrsmax)
 }
 
-d=data.frame(tau=tau/6,omega1=as.character(filt/6),rhol,rholmin,rholmax)
+d=data.frame(tau=tau/6,omega1=factor(paste0(as.character(filt/6),"h"),levels=c("1h","1.5h","2h","24h")),rhol,rholmin,rholmax)
 #cols=c("#00BFC4","#F8766D","#C77CFF","#7CAE00")
-cols=rainbow(24)[c(1,3,8,20)]
-xlim(-48,48)
+#cols=rainbow(24)[c(1,3,8,20)]
+#xlim(-48,48)
+
 g=ggplot(d,aes(x=tau,y=rhol,colour=omega1))
 g+geom_point(shape=19)+
   geom_errorbar(aes(ymin=rholmin,ymax=rholmax))+
   geom_line(aes(x=tau,y=rhol,colour=omega1,group=omega1))+
-  scale_color_manual(values=cols,breaks=c("1","1.5","2","24"),name="omega1 (h)")+
+  #scale_color_manual(values=cols,breaks=c("1","1.5","2","24"),name="omega1 (h)")+
+  scale_color_discrete(name=expression(omega[1]))+
   geom_vline(xintercept=c(-3,-5.95,3,5.95)/6,col=rep(cols[1],4),linetype=rep(2,4))+
   geom_vline(xintercept=c(-4.5,-9,4.5,9)/6,col=rep(cols[2],4),linetype=rep(2,4))+
   geom_vline(xintercept=c(-6.05,-12,6.05,12)/6,col=rep(cols[3],4),linetype=rep(2,4))+
-  coord_cartesian(xlim = c(-8, 8))+xlab('tau (h)')+ylab('rho_lagged')
+  coord_cartesian(xlim = c(-8, 8))+xlab(expression('Temporal lag '*tau*' (h)'))+
+  ylab(expression('Lagged correlation '*rho[tau]))+stdtheme
+ggsave(file='../Results/Prediction/laggedCorrelations.png',width=22,height=16,units='cm')
   
 #unique(ggplot_build(g+geom_point(shape=19))$data[[1]]$colour)
 

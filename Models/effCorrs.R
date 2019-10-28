@@ -120,24 +120,34 @@ for(f in 1:length(filterings)){
   } 
 }
 
+reseffcorrs = data.frame(
+  rho=expcorr,
+  rho_eff=effcorrs,
+  rhomin=effcorrsmin,
+  rhomax=effcorrsmax,
+  rhoth=thcorr,
+  filtering=filt*600/3600
+)
 
+save(reseffcorrs,file='res/effcorrs.RData')
+library(RColorBrewer)
 
-g=ggplot(
-  data.frame(
-    rho=expcorr,
-    rho_eff=effcorrs,
-    rhomin=effcorrsmin,
-    rhomax=effcorrsmax,
-    rhoth=thcorr,
-    filtering=filt*600/3600),
-  aes(x=rho,y=rho_eff,colour=filtering))
-g+geom_point(shape=19)+
-  geom_errorbar(aes(ymin=rhomin,ymax=rhomax))+
-  scale_color_gradientn(colours=rainbow(length(filterings)),name="omega_1 (h)")+
-  geom_line(aes(x=rho,y=rhoth,group=filtering,colour=filtering))+
-  geom_abline(slope=1,intercept = 0,colour="black",linetype=2)+
-  geom_vline(xintercept=2*rho0*mean(e1mean)*mean(e2mean)/(mean(e1mean)^2+mean(e2mean)^2),colour='red')
+discrfilt = ifelse(filt==1,"10min",ifelse(filt==3,"30min",ifelse(filt==6,"1h",ifelse(filt==12,"2h","4h"))))
+reseffcorrs$discrfilt = factor(discrfilt,levels = c("10min","30min","1h","2h","4h"))
 
+g=ggplot(reseffcorrs,aes(x=rho,y=rho_eff,colour=discrfilt))
+g+geom_point(shape=19)+geom_line(linetype=2,size=0.4)+
+  geom_errorbar(aes(ymin=rhomin,ymax=rhomax),width=0.03)+
+  #scale_color_gradientn(colours=rainbow(length(filterings)),name=expression(omega[1]*" (h)"))+
+  #scale_color_gradientn(colours=brewer.pal(length(filterings),"Paired"),name=expression(omega[1]*" (h)"))+
+  scale_color_discrete(name=expression(omega[1]))+
+  geom_line(aes(x=rho,y=rhoth,group=filtering,colour=discrfilt),size=1)+
+  geom_abline(slope=1,intercept = 0,colour="black",linetype=2,size=1)+
+  geom_vline(xintercept=2*rho0*mean(e1mean)*mean(e2mean)/(mean(e1mean)^2+mean(e2mean)^2),colour='red')+
+  xlab(expression("Targeted correlation "*rho))+ylab(expression("Effective correlation "*rho[e]))+
+  #scale_x_log10()+scale_y_log10()+ # must add 1 - makes no sense anyway
+  stdtheme
+ggsave(file='../Results/Cors/effectiveCorrs.png',width=24,height=20,units='cm')
 
 
 
