@@ -52,7 +52,7 @@ cleanData <- function(dir,month,assets){
   # load the data
   show("-> loading data")
   d = list()
-  for(asset in assets){d[[asset]]=read.csv(paste0(dir,"/",asset,'_',month,'.csv'),header=FALSE)}
+  for(asset in assets){d[[asset]]=read.csv(paste0(dir,"/",asset,'_',month,'.csv'),header=TRUE)}
   # convert times
   show("-> converting timestamps")
   for(asset in assets){
